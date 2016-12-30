@@ -48,7 +48,6 @@
 %template() std::vector<CNTK::StreamConfiguration>;
 %template() std::vector<std::shared_ptr<CNTK::NDArrayView>>;
 %template() std::vector<std::shared_ptr<CNTK::Function>>;
-%template() std::vector<std::shared_ptr<CNTK::UserFunction>>;
 %template() std::vector<std::shared_ptr<CNTK::Learner>>;
 %template() std::vector<std::shared_ptr<CNTK::DistributedLearner>>;
 %template() std::pair<size_t, double>;
@@ -1265,51 +1264,18 @@ public:
 %template(training_parameter_per_sample_schedule) CNTK::TrainingParameterPerUnitSchedule<double, CNTK::TrainingParameterSchedule<double>::UnitType::Sample>;
 %template(training_parameter_per_minibatch_schedule) CNTK::TrainingParameterPerUnitSchedule<double, CNTK::TrainingParameterSchedule<double>::UnitType::Minibatch>;
 
-%shared_ptr(CNTK::UserFunction);
 %shared_ptr(CNTK::UserBackPropState)
 
 // Callback support
-%feature("director") CNTK::UserFunction;
+%feature("director") CNTK::Function;
 
 
 // We have to explicitly tell Swig to generate a constructor. 
 // For some reasons, it is confused by CNTK::Function being abstract.
-%feature("notabstract") CNTK::UserFunction;
+%feature("notabstract") CNTK::Function;
 %inline %{
 
 namespace CNTK {
-
-    class UserFunction : public Function {
-    public:
-
-        UserFunction(const std::vector<Variable>& inputs, 
-                const std::vector<Variable> outputs, 
-                const std::wstring& name, 
-                const std::wstring& opName)
-            : Function(inputs, outputs, Dictionary(), name), m_opName(opName)
-        { }
-
-        virtual ~UserFunction() { }
-
-        BackPropStatePtr Forward(const std::unordered_map<Variable, ValuePtr>& ,
-            std::unordered_map<Variable, ValuePtr>& dir_outputs,
-            const DeviceDescriptor& ,
-            const std::unordered_set<Variable>& ) override 
-        { NOT_IMPLEMENTED; }
-
-        void Backward(const BackPropStatePtr& ,
-            const std::unordered_map<Variable, ValuePtr>& ,
-            std::unordered_map<Variable, ValuePtr>& dir_backPropagatedGradientValuesForInputs) override 
-        { NOT_IMPLEMENTED; }
-
-        const std::wstring& OpName() const override { return m_opName; }
-
-        Dictionary Serialize() const override { NOT_IMPLEMENTED; }
-        size_t CurrentVersion() const override { NOT_IMPLEMENTED; }
-
-    private:
-        const std::wstring& m_opName;
-    };
 
     class UserBackPropState : public BackPropState {
     public:

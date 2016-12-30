@@ -17,7 +17,7 @@ from .swig_helper import typemap
 from ..axis import Axis
 from .progress_print import *
 
-_VARIABLE_OR_FUNCTION = (cntk_py.Variable, cntk_py.Function, cntk_py.UserFunction)
+_VARIABLE_OR_FUNCTION = (cntk_py.Variable, cntk_py.Function)
 
 def sanitize_precision(precision):
     '''
@@ -115,7 +115,7 @@ def sanitize_input(arg, fallback_dtype=np.float32, reshape=None):
         return arg
 
     # or a Function?
-    if isinstance(arg, (cntk_py.Function, cntk_py.UserFunction)):
+    if isinstance(arg, cntk_py.Function):
         try:
             return arg.output
         except RuntimeError:
@@ -303,7 +303,7 @@ def sanitize_function(arg):
     if isinstance(arg, cntk_py.Variable):
         arg = arg.owner
 
-    if not isinstance(arg, (cntk_py.Function, cntk_py.UserFunction)):
+    if not isinstance(arg, cntk_py.Function):
         raise TypeError("Object of type %s cannot be cast to Variable" %
                 str(type(arg)))
 

@@ -31,11 +31,16 @@ class CloneMethod(Enum):
     (e.g. for use as a fixed feature extractor)
     '''
 
-class FunctionMixIn(object):
+class Function(cntk_py.Function):
     '''
-    Mixin class of attributes and methods that are shared by :class:`Function` and
-    :class:`UserFunction`.
+    Base class of all primitive tensor operators.
+
+    If it has only one output, one can invoke Variable methods on it, which it
+    will relay to its only output.
+
+    For all available methods, see :class:`Function`.
     '''
+
     # define input shapes, in-place
     # e.g.
     # model.declare_args(42)
@@ -116,7 +121,7 @@ class FunctionMixIn(object):
         '''
         List of all input variables of the Function that are not of type Parameter or Constant
         '''
-        return super(FunctionMixIn, self).arguments()
+        return super(Function, self).arguments()
 
     @property
     @typemap
@@ -124,7 +129,7 @@ class FunctionMixIn(object):
         '''
         List of the attributes of the function
         '''
-        return super(FunctionMixIn, self).attributes()
+        return super(Function, self).attributes()
 
     @typemap
     def clone(self, method, substitutions=None):
@@ -150,7 +155,7 @@ class FunctionMixIn(object):
                 'ParameterCloningMethod_' + CloneMethod(method).name.capitalize())
         if substitutions is None:
             substitutions = {}
-        return super(FunctionMixIn, self).clone(method, substitutions)
+        return super(Function, self).clone(method, substitutions)
 
     @property
     @typemap
@@ -158,7 +163,7 @@ class FunctionMixIn(object):
         '''
         List of all `Constant` variables of this :class:`~cntk.ops.functions.Function`
         '''
-        return super(FunctionMixIn, self).constants()
+        return super(Function, self).constants()
 
     def eval(self, arguments=None, device=None):
         '''
@@ -281,7 +286,7 @@ class FunctionMixIn(object):
         output_map = {v: None for v in outputs}
         keep_for_backward = set(keep_for_backward or {})
 
-        state = super(FunctionMixIn, self)._forward(in_var_map, output_map, device,
+        state = super(Function, self)._forward(in_var_map, output_map, device,
                                              keep_for_backward)
 
         for k in output_map:
@@ -384,21 +389,21 @@ class FunctionMixIn(object):
         '''
         List of all input variables of this function.
         '''
-        return super(FunctionMixIn, self).inputs()
+        return super(Function, self).inputs()
 
     @property
     def name(self):
         '''
         Name of this function
         '''
-        return super(FunctionMixIn, self).name()
+        return super(Function, self).name()
 
     @property
     def op_name(self):
         '''
         Name of the operation that this Function performs
         '''
-        return super(FunctionMixIn, self).op_name()
+        return super(Function, self).op_name()
 
     @property
     @typemap
@@ -406,7 +411,7 @@ class FunctionMixIn(object):
         '''
         The single output variable if there is only one, or raises an exception.
         '''
-        return super(FunctionMixIn, self).output()
+        return super(Function, self).output()
 
     @property
     @typemap
@@ -414,7 +419,7 @@ class FunctionMixIn(object):
         '''
         List consisting of all output variables of this function.
         '''
-        return super(FunctionMixIn, self).outputs()
+        return super(Function, self).outputs()
 
     @property
     @typemap
@@ -422,7 +427,7 @@ class FunctionMixIn(object):
         '''
         List of all parameter variables of this function.
         '''
-        return super(FunctionMixIn, self).parameters()
+        return super(Function, self).parameters()
 
     @property
     @typemap
@@ -430,7 +435,7 @@ class FunctionMixIn(object):
         '''
         List of all placeholders variables of this function.
         '''
-        return super(FunctionMixIn, self).placeholders()
+        return super(Function, self).placeholders()
 
     @property
     @typemap
@@ -438,7 +443,7 @@ class FunctionMixIn(object):
         '''
         The primitive function at the root of the graph of functions underlying this function.
         '''
-        return super(FunctionMixIn, self).root_function()
+        return super(Function, self).root_function()
 
     @property
     def is_primitive(self):
@@ -492,7 +497,7 @@ class FunctionMixIn(object):
         '''
         The internally generated unique name of the function.
         '''
-        return super(FunctionMixIn, self).uid()
+        return super(Function, self).uid()
 
     @typemap
     def replace_placeholders(self, substitutions):
@@ -506,7 +511,7 @@ class FunctionMixIn(object):
         Returns:
             :class:`Function`: itself
         '''
-        return super(FunctionMixIn, self).replace_placeholders(substitutions)
+        return super(Function, self).replace_placeholders(substitutions)
 
     @typemap
     def replace_placeholder(self, substitution):
@@ -523,7 +528,7 @@ class FunctionMixIn(object):
 
         :raises ExceptionType: when the function has multiple placeholders.
         '''
-        return super(FunctionMixIn, self).replace_placeholder(substitution)
+        return super(Function, self).replace_placeholder(substitution)
 
     @typemap
     def find_all_with_name(self, name):
@@ -600,7 +605,7 @@ class FunctionMixIn(object):
         Args:
             filename (str): model path
         '''
-        return super(FunctionMixIn, self).save_model(filename)
+        return super(Function, self).save_model(filename)
 
     @typemap
     def restore_model(self, filename):
@@ -613,26 +618,16 @@ class FunctionMixIn(object):
         Returns:
             `None`: this method only has the side-effect of loading the model parameters from the file
         '''
-        return super(FunctionMixIn, self).restore_model(filename)
+        return super(Function, self).restore_model(filename)
 
-class Function(FunctionMixIn, cntk_py.Function):
-    '''
-    Base class of all primitive tensor operators.
 
-    If it has only one output, one can invoke Variable methods on it, which it
-    will relay to its only output.
-
-    For all available methods, see :class:`FunctionMixIn`.
-    '''
-
-class UserFunction(FunctionMixIn, cntk_py.UserFunction):
+class UserFunction(Function):
     '''
     Base class of all user extension functions.
 
     If it has only one output, one can invoke Variable methods on it, which it
     will relay to its only output.
 
-    For all available methods, see :class:`FunctionMixIn`.
     '''
     def __init__(self, inputs, outputs, op_name, name=''):
         var_inputs = []
@@ -644,7 +639,9 @@ class UserFunction(FunctionMixIn, cntk_py.UserFunction):
                 var_inputs.append(i.output)
             else:
                 raise ValueError('expected Variable, but got "%s"'%type(i))
-        super(UserFunction, self).__init__(var_inputs, outputs, name, op_name)
+
+        super(UserFunction, self).__init__(var_inputs, outputs, 
+                cntk_py.Dictionary(), name, op_name)
 
     def _forward(self, arguments, outputs, device=None, outputs_to_retain=None):
         '''
@@ -737,7 +734,7 @@ class UserFunction(FunctionMixIn, cntk_py.UserFunction):
 def load_model(filename, device=None):
     '''
     Load the model in ``filename``, that has been saved using
-    :func:`~cntk.ops.functions.FunctionMixin.save_model`.
+    :func:`~cntk.ops.functions.Function.save_model`.
 
     Args:
         filename (str): filename to load the model from
