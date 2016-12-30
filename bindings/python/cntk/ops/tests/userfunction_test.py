@@ -15,12 +15,12 @@ from .ops_test_utils import precision
 from cntk import *
 from cntk.trainer import *
 from cntk.learner import *
-from cntk.ops.functions import Function, UserFunction, UserOutput
+from cntk.ops.functions import Function, UserFunction
 
 class Plus3Func(UserFunction):
 
     def __init__(self, in1):
-        outputs = [UserOutput(in1.shape, in1.dtype, in1.dynamic_axes)]
+        outputs = [output_variable(in1.shape, in1.dtype, in1.dynamic_axes)]
         super(Plus3Func, self).__init__([in1], outputs, op_name='Plus3Func', name='f1')
 
     def forward(self, arguments, outputs, device=None, outputs_to_retain=None):

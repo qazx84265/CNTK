@@ -40,6 +40,7 @@
 %template() std::vector<std::vector<double>>;
 
 %template() std::vector<CNTK::Variable>;
+%template() std::vector<CNTK::OutputVariable>;
 %template() std::vector<CNTK::Parameter>;
 %template() std::vector<CNTK::Constant>;
 %template() std::vector<CNTK::Axis>;
@@ -52,7 +53,6 @@
 %template() std::vector<std::shared_ptr<CNTK::DistributedLearner>>;
 %template() std::pair<size_t, double>;
 %template() std::vector<std::pair<size_t, double>>;
-%template() std::vector<CNTK::UserOutput>;
 %template() std::vector<std::pair<CNTK::Variable, CNTK::Variable>>;
 
 // They are defined twice under CNTK::Internal and under CNTK namespace
@@ -1279,38 +1279,14 @@ public:
 
 namespace CNTK {
 
-    class UserOutput {
-    public:
-        UserOutput(const NDShape& shape, const DataType& dataType, const std::vector<Axis>& dynamicAxes) :
-            m_shape(shape), m_dataType(dataType), m_dynamicAxes(dynamicAxes)
-        { }
-
-        const NDShape& Shape() const {
-            return m_shape;
-        }
-
-        const DataType& GetDataType() const {
-            return m_dataType;
-        }
-
-        const std::vector<Axis>& DynamicAxes() const {
-            return m_dynamicAxes;
-        }
-
-    private:
-        NDShape m_shape;
-        DataType m_dataType;
-        std::vector<Axis> m_dynamicAxes;
-    };
-
     class UserFunction : public Function {
     public:
 
         UserFunction(const std::vector<Variable>& inputs, 
-                const std::vector<UserOutput> outputs, 
+                const std::vector<Variable> outputs, 
                 const std::wstring& name, 
                 const std::wstring& opName)
-            : Function(inputs, GetOutputVariables(outputs), Dictionary(), name), m_opName(opName)
+            : Function(inputs, outputs, Dictionary(), name), m_opName(opName)
         { }
 
         virtual ~UserFunction() { }
@@ -1332,23 +1308,6 @@ namespace CNTK {
         size_t CurrentVersion() const override { NOT_IMPLEMENTED; }
 
     private:
-        std::vector<Variable> GetOutputVariables(
-                const std::vector<UserOutput> outputs)
-        {
-            std::vector<Variable> outputVariables;
-
-            for (auto it: outputs)
-            {
-                outputVariables.push_back(
-                        OutputVariable(it.Shape(), 
-                            it.GetDataType(), 
-                            this, 
-                            it.DynamicAxes()));
-            }
-
-            return outputVariables;
-        }
-
         const std::wstring& m_opName;
     };
 

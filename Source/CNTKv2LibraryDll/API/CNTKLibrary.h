@@ -2531,11 +2531,6 @@ namespace CNTK
         CNTK_API void PrintGraph() const;
 
     protected:
-        ///
-        /// Protected constructor for derived 'Function' types to specify the actual input and output variables for the (primitive) Function instance.
-        ///
-        CNTK_API Function(const std::vector<Variable>& inputs, const std::vector<Variable>& outputs, Dictionary&& functionConfig, const std::wstring& name = L"", const std::wstring& uid = Internal::GenerateUid(L"UserDefinedFunction"));
-
         /// Restores the state of the 'this' function in place using the provided dictionary.
         /// Structurally, 'this' function graph has to be identical to the state captured in the dictionary.
         CNTK_API virtual void RestoreFromCheckpoint(const Dictionary& dictionary);

@@ -733,19 +733,6 @@ class UserFunction(FunctionMixIn, cntk_py.UserFunction):
     def backward(self, state, root_gradients, variables):
         raise NotImplementedError
 
-class UserOutput(cntk_py.UserOutput):
-    '''
-    Holds the specification of one output for :class:`UserFunction`.
-    '''
-    def __init__(self, shape, dtype, dynamic_axes):
-        dtype = sanitize_dtype_cntk(dtype)
-        for a in dynamic_axes:
-            if not a.is_dynamic_axis:
-                raise ValueError('axis in dynamic_axes attribute is not dynamic')
-        dynamic_axes = list(reversed(dynamic_axes))
-
-        super(UserOutput, self).__init__(shape, dtype, list(dynamic_axes))
-
 @typemap
 def load_model(filename, device=None):
     '''
